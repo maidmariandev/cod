@@ -24,28 +24,11 @@ export class ActorCoD extends Actor {
 		const data = actorData.data;
 		const attributeList = duplicate(CONFIG.attributes);
 		const skillsList = duplicate(CONFIG.skills);
-
-		const wits = data.attributes.wits;
-		const res = data.attributes.res;
-		const str = data.attributes.str;
-		const dex = data.attributes.dex;
-		const sta = data.attributes.sta;
-		const com = data.attributes.com;
+		const {wits, res, str, dex, sta, com} = data.attributes;
 
 		const athletics = data.skills.athletics;
-
-		const hp = data.advantages.hp;
-		const wp = data.advantages.wp;
-		const integrity = data.advantages.integrity;
-		const size = data.advantages.size;
-		const speed = data.advantages.speed;
-		const def = data.advantages.def;
-		const garmor = data.advantages.garmor;
-		const barmor = data.advantages.barmor;
-		const initiative = data.advantages.initiative;
-
-		const exp = data.advancement.exp;
-		const beats = data.advancement.beats;
+		const {hp, wp, integrity, size, speed, def, garmor, barmor, initiative} = data.advantages;
+		const {exp, beats} = data.advancement;
 
 		// Check to see if current HP/WP > max, correct if so
 		if (hp.value > hp.max) hp.value = hp.max;
@@ -58,19 +41,24 @@ export class ActorCoD extends Actor {
 		if (integrity.value > integrity.max) integrity.value = integrity.max;
 
 		// Ensure Attributes and Skills are appropriate values
-		for (let a in attributeList) {
+		/*for (let a in attributeList) {
 			if (data.attributes[a].value > data.attributes[a].max)
 				data.attributes[a].value = data.attributes[a].max;
 			if (data.attributes[a].value < data.attributes[a].min)
 				data.attributes[a].value = data.attributes[a].min;
-		}
+		}*/
+		let AttributeSet = Object.keys(attributeList).map(A=>data.attributes[A]);
+		this.CheckMaxRule(AttributeSet);
+		let SkillSet = Object.keys(skillsList).map(A=>data.skills[A]);
+		this.CheckMaxRule(SkillSet);
 
-		for (let s in skillsList) {
+
+		/*for (let s in skillsList) {
 			if (data.skills[s].value > data.skills[s].max)
 				data.skills[s].value = data.skills[s].max;
 			if (data.skills[s].value < data.skills[s].min)
 				data.skills[s].value = data.skills[s].min;
-		}
+		}*/
 
 		// Ensure others are valid
 		if (size.value < size.min) size.value = size.min;
@@ -93,7 +81,13 @@ export class ActorCoD extends Actor {
 		}
 	}
 
-	// Standard attribute + skill roll
+	CheckMaxRule(SkillSet) {
+		SkillSet.filter(A => A.value > A.max).forEach(A => {
+			A.value = A.max;
+		})
+	}
+
+// Standard attribute + skill roll
 	rollPool(attribute, skill, modifier, exploder) {
 		// Ex: 'int', 'animalken', 'ten'. Define global roll pool, assume valid att
 		// & skill sent even if 0 or negative value.
@@ -292,7 +286,7 @@ export class ActorCoD extends Actor {
 		}
 		console.log(`Weapon roll: ${attribute}, ${skill}`);
 		console.log(`Target: ${target}`);
-		if (target == 'none')
+		if (target === 'none')
 			rollString = `<b>${name}</b> attacks with <b>${weapon}</b>! (${damage} dmg)`;
 		else
 			rollString = `<b>${name}</b> attacks <b>${target}</b> with <b>${weapon}</b>! (${damage} dmg)`;
